@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0",
+  "status": "pass",
+  "source_control_inventory": [
+    {
+      "owner": "product",
+      "id": "camera-exit",
+      "file": "src/components/camera/camera-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "camera-pause-toggle",
+      "file": "src/components/camera/camera-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "camera-mute-toggle",
+      "file": "src/components/camera/camera-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "detail-back-history",
+      "file": "src/components/detail/detail-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "error-retry",
+      "file": "src/components/errors/error-fallback-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "error-back-home",
+      "file": "src/components/errors/error-fallback-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "notfound-back-home",
+      "file": "src/components/errors/not-found-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "nav-home",
+      "file": "src/components/fit/bottom-nav.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "nav-history",
+      "file": "src/components/fit/bottom-nav.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "nav-library",
+      "file": "src/components/fit/bottom-nav.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "nav-stats",
+      "file": "src/components/fit/bottom-nav.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "nav-camera",
+      "file": "src/components/fit/bottom-nav.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "history-open-detail",
+      "file": "src/components/fit/workout-row.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "home-open-workout-detail",
+      "file": "src/components/fit/workout-row.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "history-filter-strength",
+      "file": "src/components/history/history-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "history-filter-cardio",
+      "file": "src/components/history/history-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "history-filter-mobility",
+      "file": "src/components/history/history-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "history-filter-all",
+      "file": "src/components/history/history-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "home-start-camera",
+      "file": "src/components/home/home-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "global-language-toggle",
+      "file": "src/components/i18n/language-switcher.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "library-start-exercise",
+      "file": "src/components/library/library-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "session-back-home",
+      "file": "src/components/session/session-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "session-active-home",
+      "file": "src/components/session/session-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "session-finish-home",
+      "file": "src/components/session/session-page.tsx"
+    },
+    {
+      "owner": "product",
+      "id": "session-pause-home",
+      "file": "src/components/session/session-page.tsx"
+    }
+  ],
+  "commands": [
+    {
+      "name": "lint",
+      "command": "bun run lint",
+      "exit_code": 0,
+      "log": "review/lint.log"
+    },
+    {
+      "name": "build",
+      "command": "bun run build",
+      "exit_code": 0,
+      "log": "review/build.log"
+    }
+  ],
+  "findings": []
+}

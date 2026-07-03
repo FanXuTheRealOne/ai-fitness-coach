@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "starter": {
+    "source": "https://github.com/EazoAI/eazo-creator-nextjs-template.git",
+    "branch": "main",
+    "commit": "0067f106872c7f5372916e4fdbd7455eee006a38"
+  },
+  "stages": [
+    {
+      "stage": "adapt",
+      "status": "complete",
+      "note": "Adapted existing AI fitness coach into an Eazo-compatible Next.js app shell."
+    }
+  ]
+}

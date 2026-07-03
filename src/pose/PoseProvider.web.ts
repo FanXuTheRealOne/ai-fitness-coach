@@ -1,8 +1,24 @@
-import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { Pose, PoseFrame } from "./keypoints";
 import { PoseProvider } from "./PoseProvider";
 
-const toPose = (lm: any[]): Pose =>
+type LandmarkLike = { x: number; y: number; z?: number; visibility?: number };
+type VisionModule = {
+  FilesetResolver: {
+    forVisionTasks(url: string): Promise<unknown>;
+  };
+  PoseLandmarker: {
+    createFromOptions(fileset: unknown, options: unknown): Promise<PoseLandmarkerLike>;
+  };
+};
+type PoseLandmarkerLike = {
+  detectForVideo(video: HTMLVideoElement, timestampMs: number): {
+    landmarks?: LandmarkLike[][];
+    worldLandmarks?: LandmarkLike[][];
+  };
+  close(): void;
+};
+
+const toPose = (lm: LandmarkLike[]): Pose =>
   lm.map((p) => ({ x: p.x, y: p.y, z: p.z, visibility: p.visibility }));
 
 const VERSION = "0.10.35";
@@ -14,11 +30,11 @@ const MODEL_URL =
 // MediaPipe 的 ESM bundle 含 Metro 无法静态分析的动态 import，因此不通过打包引入，
 // 改为运行时从 CDN 动态加载。用 Function 包裹 import() 以绕过 Metro 的依赖收集。
 // （类型仍来自 npm 包的 `import type`，会在编译期被擦除，不进 bundle。）
-let visionPromise: Promise<any> | null = null;
-function loadVision(): Promise<any> {
+let visionPromise: Promise<VisionModule> | null = null;
+function loadVision(): Promise<VisionModule> {
   if (!visionPromise) {
     const url = `${CDN}/vision_bundle.mjs`;
-    const dynamicImport = new Function("u", "return import(u)") as (u: string) => Promise<any>;
+    const dynamicImport = new Function("u", "return import(u)") as (u: string) => Promise<VisionModule>;
     visionPromise = dynamicImport(url);
   }
   return visionPromise;
@@ -26,7 +42,7 @@ function loadVision(): Promise<any> {
 
 /** Web 端姿态推理：MediaPipe PoseLandmarker（BlazePose lite，VIDEO 模式，单人）。 */
 export function createPoseProvider(): PoseProvider {
-  let landmarker: PoseLandmarker | null = null;
+  let landmarker: PoseLandmarkerLike | null = null;
 
   return {
     async init() {

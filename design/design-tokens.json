@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "art_direction": "sports-tech dark mobile dashboard",
+  "reference_board": {
+    "layout": "Single mobile frame with camera-first workout flow and compact stat cards",
+    "component_specimens": ["Hero camera CTA", "Bottom navigation", "Camera controls", "Session stat cards"],
+    "decorative_parts": ["Lime pulse", "Orange active state", "Camera scan line"]
+  },
+  "motion": {
+    "pace": "Responsive",
+    "signature": "Rep count pops and camera scan line moves during active detection",
+    "durations_ms": {
+      "micro": 120,
+      "standard": 180,
+      "emphasis": 450
+    },
+    "easing": "cubic-bezier(.36,.07,.19,.97)"
+  },
+  "audio": {
+    "bgm": false,
+    "mood": "No background music",
+    "interaction": "Voice coaching can be muted during camera session"
+  }
+}

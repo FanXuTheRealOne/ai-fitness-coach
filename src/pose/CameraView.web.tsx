@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from "react";
-// react-native-web 提供的逃生口：把任意 DOM 元素当作 RN 组件渲染。
-import { unstable_createElement } from "react-native-web";
+import { useEffect, useRef } from "react";
 
 /**
  * Web 摄像头取流：渲染一个铺满的 <video>，通过 getUserMedia 接前置摄像头，
@@ -36,9 +34,10 @@ export function CameraViewWeb({
           await v.play();
           onReady(v);
         }
-      } catch (e: any) {
-        const denied = e?.name === "NotAllowedError" || e?.name === "SecurityError";
-        const msg = e?.message || e?.name || (typeof e === "string" ? e : "摄像头不可用");
+      } catch (e: unknown) {
+        const error = e instanceof Error ? e : null;
+        const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
+        const msg = error?.message || error?.name || (typeof e === "string" ? e : "摄像头不可用");
         onError(denied ? "denied" : "error", msg);
       }
     })();
@@ -46,21 +45,23 @@ export function CameraViewWeb({
       cancelled = true;
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+  }, [onError, onReady]);
 
-  return unstable_createElement("video", {
-    ref,
-    autoPlay: true,
-    playsInline: true,
-    muted: true,
-    style: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      transform: mirror ? "scaleX(-1)" : "none",
-    },
-  });
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        transform: mirror ? "scaleX(-1)" : "none",
+      }}
+    />
+  );
 }

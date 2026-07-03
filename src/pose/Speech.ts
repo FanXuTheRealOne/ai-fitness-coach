@@ -9,9 +9,9 @@ export interface Speech {
 }
 
 export function createSpeech(lang = "zh-CN"): Speech {
-  const g: any = typeof globalThis !== "undefined" ? globalThis : {};
-  const synth: SpeechSynthesis | undefined = g.speechSynthesis;
-  const Utter = g.SpeechSynthesisUtterance;
+  const g = typeof globalThis !== "undefined" ? globalThis : undefined;
+  const synth: SpeechSynthesis | undefined = g?.speechSynthesis;
+  const Utter = g?.SpeechSynthesisUtterance;
   let muted = false;
 
   return {

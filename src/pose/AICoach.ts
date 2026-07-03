@@ -45,7 +45,7 @@ interface RepSummary {
 const API_URL =
   typeof process !== "undefined" && process.env?.EXPO_PUBLIC_COACH_API_URL
     ? process.env.EXPO_PUBLIC_COACH_API_URL
-    : "http://localhost:8788/api/coach-feedback";
+    : "/api/coach-feedback";
 
 const METRIC_KEYS: Array<keyof PoseFeatures> = [
   "kneeAngle",

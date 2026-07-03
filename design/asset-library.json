@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "style_lock": "Dark sports-tech mobile UI with lime progress, orange action states, dense stat cards, and live camera scan affordances.",
+  "assets": [
+    { "id": "hero-athlete-photo", "type": "image", "name": "Hero athlete photo", "mapped_control_id": null, "implementation_hint": "Use public/hero-athlete.webp as the home hero image." },
+    { "id": "primary-camera-cta", "type": "component", "name": "Camera CTA", "mapped_control_id": "home-start-camera", "implementation_hint": "Dark card with lime circular camera icon." },
+    { "id": "bottom-camera-action", "type": "component", "name": "Bottom camera action", "mapped_control_id": "nav-camera", "implementation_hint": "Raised lime circular action in bottom navigation." },
+    { "id": "camera-session-controls", "type": "component", "name": "Camera controls", "mapped_control_id": "camera-pause-toggle", "implementation_hint": "Orange circular pause/resume with small mute control." },
+    { "id": "language-toggle", "type": "component", "name": "Language switcher", "mapped_control_id": "global-language-toggle", "implementation_hint": "Template language control toggles English and Chinese." }
+  ]
+}

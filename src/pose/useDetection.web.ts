@@ -88,7 +88,9 @@ export function useDetection(video: HTMLVideoElement | null, paused: boolean, mu
   // 最新的 paused/muted 供 RAF 闭包读取
   const pausedRef = useRef(paused);
   const mutedRef = useRef(muted);
-  pausedRef.current = paused;
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
   useEffect(() => {
     mutedRef.current = muted;
     speech.current.setMuted(muted);
@@ -97,7 +99,9 @@ export function useDetection(video: HTMLVideoElement | null, paused: boolean, mu
   // 初始化推理引擎（一次）
   useEffect(() => {
     let alive = true;
-    provider.current
+    const poseProvider = provider.current;
+    const speechEngine = speech.current;
+    poseProvider
       .init()
       .then(() => {
         if (!alive) return;
@@ -105,15 +109,16 @@ export function useDetection(video: HTMLVideoElement | null, paused: boolean, mu
         tracker.current = new SessionTracker(EXERCISE_BY_ID.squat, performance.now());
         setUi((p) => ({ ...p, status: "ready" }));
       })
-      .catch((e: any) => {
+      .catch((e: unknown) => {
         if (!alive) return;
-        const msg = e?.message || e?.name || (typeof e === "string" ? e : "识别模型初始化失败");
+        const error = e instanceof Error ? e : null;
+        const msg = error?.message || error?.name || (typeof e === "string" ? e : "识别模型初始化失败");
         setUi((p) => ({ ...p, status: "error", errorMessage: msg }));
       });
     return () => {
       alive = false;
-      provider.current.close();
-      speech.current.cancel();
+      poseProvider.close();
+      speechEngine.cancel();
     };
   }, []);
 
