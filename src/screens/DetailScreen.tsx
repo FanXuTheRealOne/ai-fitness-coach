@@ -46,15 +46,18 @@ function buildPoints(q: number[]): string {
 
 export function DetailScreen() {
   const { navigate, summary } = useApp();
-  const exName = summary?.exerciseName ?? "Squat";
-  const reps = summary?.reps ?? 45;
+  const exercises = summary?.exercises ?? [];
+  const primary = exercises[0] ?? null;
+  const exName = primary?.exerciseName ?? summary?.exerciseName ?? "Squat";
+  const reps = primary?.reps ?? summary?.reps ?? 45;
   const durationSec = summary ? Math.floor(summary.durationSec) : 372;
   const calories = summary ? Math.round(summary.calories) : 132;
   const avgRpm = summary && summary.durationSec > 0 ? summary.reps / (summary.durationSec / 60) : 7.2;
   const formPct = summary ? Math.round(summary.correctFormPct) : 78;
-  const emoji = summary ? EMOJI[summary.exerciseId] ?? "🏋️" : "🏋️";
+  const emoji = summary ? EMOJI[primary?.exerciseId ?? summary.exerciseId] ?? "🏋️" : "🏋️";
   const chartPoints = summary && summary.repQualities.length >= 2 ? buildPoints(summary.repQualities) : LINE_POINTS;
   const repBarPct = summary ? Math.max(10, Math.min(100, Math.round((reps / 20) * 100))) : 90;
+  const totalWork = exercises.reduce((sum, ex) => sum + ex.reps + ex.holdSec, 0);
   return (
     <ScreenFade duration={300} translate={0}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 96 }}>
@@ -131,14 +134,26 @@ export function DetailScreen() {
         {/* Exercise breakdown */}
         <View style={[styles.card, { marginBottom: 96 }]}>
           <Text style={[styles.cardTitle, { marginBottom: 16 }]}>Exercise Breakdown</Text>
-          <Bar
-            name={exName}
-            right={`${reps} reps`}
-            rightColor="#666"
-            width={`${repBarPct}%`}
-            gradient={[colors.lime, colors.limeDark]}
-          />
-          <View style={{ height: 16 }} />
+          {summary && exercises.length === 0 ? (
+            <Text style={styles.emptyBreakdown}>No reps or hold time were counted in this session.</Text>
+          ) : (
+            (summary ? exercises : [{ exerciseName: exName, reps, holdSec: 0, correctFormPct: formPct }]).map((exercise) => {
+              const work = exercise.holdSec > exercise.reps ? exercise.holdSec : exercise.reps;
+              const label = exercise.holdSec > exercise.reps ? `${Math.round(exercise.holdSec)} sec` : `${exercise.reps} reps`;
+              const pct = summary && totalWork > 0 ? Math.max(8, Math.round((work / totalWork) * 100)) : repBarPct;
+              return (
+                <View key={exercise.exerciseName} style={styles.breakdownItem}>
+                  <Bar
+                    name={exercise.exerciseName}
+                    right={label}
+                    rightColor="#666"
+                    width={`${pct}%`}
+                    gradient={[colors.lime, colors.limeDark]}
+                  />
+                </View>
+              );
+            })
+          )}
           <Bar
             name="Correct Form"
             right={`${formPct}%`}
@@ -237,4 +252,6 @@ const styles = StyleSheet.create({
   barRight: { fontSize: 13 },
   barTrack: { height: 5, backgroundColor: "#222", borderRadius: 3, overflow: "hidden" },
   barFill: { flex: 1, borderRadius: 3 },
+  breakdownItem: { marginBottom: 16 },
+  emptyBreakdown: { color: colors.textDim, fontSize: 13, marginBottom: 16 },
 });

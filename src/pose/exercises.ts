@@ -1,5 +1,6 @@
 import { ExerciseDef, FormIssue, PoseFeatures } from "./types";
 import { clamp, norm01 } from "./geometry";
+import { squatFormIssues } from "./squat-rules.mjs";
 
 // classify 返回 0..1，分类器取相对最大者。竖直类（squat/lunge/jumping jack）与水平类
 // （push-up/plank）先按 torsoInclination 分流，再用排他特征细分。阈值为经验值，可调。
@@ -26,23 +27,7 @@ const squat: ExerciseDef = {
   downEnter: 100,
   upExit: 155,
   formChecks(f) {
-    const out: FormIssue[] = [];
-    const squatting = f.kneeAngle < 150; // 正在下蹲才检查
-    if (squatting && f.kneeValgus > 0.4) {
-      out.push({ code: "valgus", message: "膝盖向外，对准脚尖", speak: "膝盖向外，对准脚尖，别内扣" });
-    }
-    if (f.footVisible && f.footSplay > 55) {
-      out.push({ code: "footout", message: "脚尖收一点，别太外八", speak: "脚尖收一点，别太外八" });
-    } else if (f.footVisible && f.footSplay < -8) {
-      out.push({ code: "footin", message: "脚尖朝前，别内八", speak: "脚尖朝前，别内八字" });
-    }
-    if (squatting && f.torsoInclination > 50) {
-      out.push({ code: "back", message: "挺胸收背，别弓腰", speak: "挺胸，背别弓" });
-    }
-    if (f.kneeAngle > 105 && f.kneeAngle < 145) {
-      out.push({ code: "depth", message: "再蹲低，大腿到水平", speak: "再蹲低一点，蹲到大腿水平" });
-    }
-    return out;
+    return squatFormIssues(f) as FormIssue[];
   },
   repQuality: (b) => {
     const depth = norm01(105 - b.kneeAngle, 0, 35);

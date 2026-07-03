@@ -29,7 +29,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "coach": "node server/coach-api.mjs",
+    "test:coach": "node --test server/test/*.test.mjs"
   },
   "private": true
 }

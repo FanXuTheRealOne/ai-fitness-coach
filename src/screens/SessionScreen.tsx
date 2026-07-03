@@ -6,6 +6,7 @@ import { ScreenFade, PulsingDot, GlowPulse } from "../components/anim";
 import { ChevronLeft, PauseIcon } from "../components/Icons";
 import { useApp, clock } from "../state/appState";
 import { sessionStats } from "../data";
+import { ExerciseSessionStats } from "../pose/SessionTracker";
 
 const EMOJI: Record<string, string> = {
   squat: "🏋️",
@@ -17,10 +18,14 @@ const EMOJI: Record<string, string> = {
 
 export function SessionScreen() {
   const { navigate, summary } = useApp();
-  const exName = summary?.exerciseName ?? "Squat";
+  const exercises = summary?.exercises ?? [];
+  const primary = exercises[0] ?? null;
+  const exName = primary?.exerciseName ?? summary?.exerciseName ?? "Squat";
+  const repOrHoldLabel = summary && summary.holdSec > summary.reps ? "Hold (s)" : "Reps";
+  const repOrHoldValue = summary ? String(summary.holdSec > summary.reps ? Math.round(summary.holdSec) : summary.reps) : "0";
   const stats = summary
     ? [
-        { emoji: "🔄", label: summary.holdSec > 0 ? "Hold (s)" : "Reps", value: String(summary.holdSec > 0 ? Math.round(summary.holdSec) : summary.reps) },
+        { emoji: "🔄", label: repOrHoldLabel, value: repOrHoldValue },
         { emoji: "🔥", label: "Calories", value: String(Math.round(summary.calories)) },
         { emoji: "⏱", label: "Duration", value: clock(Math.floor(summary.durationSec)) },
         { emoji: "📊", label: "Form", value: `${Math.round(summary.correctFormPct)}%` },
@@ -48,7 +53,7 @@ export function SessionScreen() {
           <Text style={styles.exName}>{exName}</Text>
           <View style={styles.exMeta}>
             <Text style={styles.metaText}>Set 1 of 1</Text>
-            <Text style={styles.metaText}>{summary ? `${stats[0].value} ${stats[0].label.toLowerCase()}` : "12 / 15"}</Text>
+            <Text style={styles.metaText}>{summary ? `${stats[0].value} ${stats[0].label.toLowerCase()}` : "0 reps"}</Text>
           </View>
           <ProgressBar />
         </View>
@@ -69,30 +74,16 @@ export function SessionScreen() {
         {/* Recognized exercises */}
         <View style={styles.recWrap}>
           <Text style={styles.recLabel}>Recognized Exercises</Text>
-          <LinearGradient
-            colors={["#2e1600", "#3e1e00"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.currentCard}
-          >
-            <View>
-              <Text style={styles.exCardName}>{exName}</Text>
-              <Text style={styles.currentTag}>Current</Text>
+          {summary && exercises.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No counted exercises</Text>
+              <Text style={styles.emptyText}>Only movements with real reps or hold time appear here.</Text>
             </View>
-            <LinearGradient colors={["#7a2200", "#C94C00"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.exThumb}>
-              <Text style={{ fontSize: 26 }}>{summary ? EMOJI[summary.exerciseId] ?? "🏋️" : "🏋️"}</Text>
-            </LinearGradient>
-          </LinearGradient>
-
-          <View style={styles.nextCard}>
-            <View>
-              <Text style={styles.exCardName}>Push-up</Text>
-              <Text style={styles.nextTag}>Next</Text>
-            </View>
-            <View style={[styles.exThumb, { backgroundColor: "#222" }]}>
-              <Text style={{ fontSize: 26 }}>💪</Text>
-            </View>
-          </View>
+          ) : (
+            (summary ? exercises : []).map((exercise, index) => (
+              <ExerciseCard key={exercise.exerciseId} exercise={exercise} primary={index === 0} />
+            ))
+          )}
         </View>
 
         {/* Pause button */}
@@ -116,6 +107,38 @@ export function SessionScreen() {
       </ScrollView>
     </ScreenFade>
   );
+}
+
+function ExerciseCard({ exercise, primary }: { exercise: ExerciseSessionStats; primary: boolean }) {
+  const subtitle =
+    exercise.holdSec > exercise.reps
+      ? `${Math.round(exercise.holdSec)} sec · ${Math.round(exercise.correctFormPct)}% form`
+      : `${exercise.reps} reps · ${Math.round(exercise.correctFormPct)}% form`;
+  const card = (
+    <>
+      <View>
+        <Text style={styles.exCardName}>{exercise.exerciseName}</Text>
+        <Text style={primary ? styles.currentTag : styles.nextTag}>{subtitle}</Text>
+      </View>
+      <LinearGradient
+        colors={primary ? ["#7a2200", "#C94C00"] : ["#252525", "#1c1c1c"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.exThumb}
+      >
+        <Text style={{ fontSize: 26 }}>{EMOJI[exercise.exerciseId] ?? "🏋️"}</Text>
+      </LinearGradient>
+    </>
+  );
+
+  if (primary) {
+    return (
+      <LinearGradient colors={["#2e1600", "#3e1e00"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.currentCard}>
+        {card}
+      </LinearGradient>
+    );
+  }
+  return <View style={styles.exerciseCard}>{card}</View>;
 }
 
 function ProgressBar() {
@@ -197,7 +220,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(229,82,10,0.25)",
   },
-  nextCard: {
+  exerciseCard: {
     backgroundColor: colors.bgCard,
     borderRadius: 16,
     padding: 14,
@@ -212,6 +235,15 @@ const styles = StyleSheet.create({
   currentTag: { color: colors.orange, fontSize: 12, fontWeight: "600", marginTop: 3 },
   nextTag: { color: colors.textDim, fontSize: 12, marginTop: 3 },
   exThumb: { width: 54, height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  emptyCard: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.bgBorder,
+  },
+  emptyTitle: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  emptyText: { color: colors.textDim, fontSize: 12, marginTop: 4 },
 
   pauseWrap: { paddingHorizontal: 20, paddingTop: 16 },
   pauseBtn: { borderRadius: 18, height: 58, backgroundColor: colors.orange },

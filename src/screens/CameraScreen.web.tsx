@@ -71,20 +71,31 @@ export function CameraScreen() {
         <Text style={styles.badgeConf}>
           Confidence <Text style={{ color: "#ccc" }}>{Math.round(ui.confidence * 100)}%</Text>
         </Text>
+        <Text style={[styles.badgeConf, { color: ui.coachStatus === "error" ? colors.orange : "#ccc" }]}>
+          AI {ui.coachStatus.toUpperCase()}
+        </Text>
       </View>
 
       {/* 实时反馈文字 */}
+      {!ui.entryReady && ui.entryHint ? (
+        <View style={styles.hint}>
+          <Text style={styles.hintText}>{ui.entryHint}</Text>
+        </View>
+      ) : null}
       {ui.formMessage ? (
         <View style={styles.hint}>
           <Text style={styles.hintText}>{ui.formMessage}</Text>
+          {ui.coachDetail ? <Text style={[styles.badgeConf, { marginTop: 4 }]}>{ui.coachDetail}</Text> : null}
         </View>
       ) : null}
 
       {/* 计数 */}
-      <View style={styles.repWrap}>
-        <RepBump value={ui.count} />
-        <Text style={styles.repsLabel}>{ui.unit}</Text>
-      </View>
+      {ui.entryReady ? (
+        <View style={styles.repWrap}>
+          <RepBump value={ui.count} />
+          <Text style={styles.repsLabel}>{ui.unit}</Text>
+        </View>
+      ) : null}
 
       {/* 控制 */}
       <View style={styles.controls}>
@@ -110,6 +121,14 @@ export function CameraScreen() {
 
       {/* 状态覆盖层（加载 / 权限 / 错误） */}
       {ui.status !== "ready" && <StatusOverlay status={ui.status} message={ui.errorMessage} />}
+      {ui.status === "ready" && ui.coachStatus !== "idle" ? (
+        <View style={styles.coachTag}>
+          <Text style={styles.coachTagText}>
+            AI {ui.coachStatus.toUpperCase()}
+            {ui.coachError ? ` · ${ui.coachError}` : ""}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -297,6 +316,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   hintText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  coachTag: {
+    position: "absolute",
+    top: 194,
+    left: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 16,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    zIndex: 10,
+  },
+  coachTagText: { color: colors.textDim, fontSize: 11, fontWeight: "700" },
 
   repWrap: { position: "absolute", bottom: 148, left: 0, right: 0, alignItems: "center", zIndex: 10 },
   repNum: { color: "#fff", fontSize: 108, fontWeight: "900", lineHeight: 112, textShadowColor: "rgba(0,0,0,0.5)", textShadowRadius: 16 },

@@ -1,5 +1,6 @@
 import { ExerciseDef, PoseFeatures } from "./types";
 import { clamp } from "./geometry";
+import { createThresholdRepCounter } from "./rep-counter-core.mjs";
 
 export interface RepEvent {
   count: number;
@@ -12,41 +13,39 @@ export interface RepEvent {
  * 记录底部最深处的特征用于质量评分。hold 型不计数（update 返回 null）。
  */
 export class RepCounter {
-  private state: "up" | "down" = "up";
-  private bottom: PoseFeatures | null = null;
+  private counter: ReturnType<typeof createThresholdRepCounter> | null = null;
   count = 0;
 
-  constructor(private ex: ExerciseDef) {}
+  constructor(private ex: ExerciseDef) {
+    this.counter = this.makeCounter(ex);
+  }
+
+  private makeCounter(ex: ExerciseDef) {
+    if (ex.type !== "rep" || !ex.repSignal) return null;
+    return createThresholdRepCounter({
+      downEnter: ex.downEnter ?? 0,
+      upExit: ex.upExit ?? 0,
+      warmupUpFrames: 3,
+    });
+  }
 
   reset(ex: ExerciseDef): void {
     this.ex = ex;
-    this.state = "up";
-    this.bottom = null;
+    this.counter = this.makeCounter(ex);
     this.count = 0;
   }
 
-  update(f: PoseFeatures): RepEvent | null {
-    if (this.ex.type !== "rep" || !this.ex.repSignal) return null;
-    const s = this.ex.repSignal(f);
-    const down = this.ex.downEnter ?? 0;
-    const up = this.ex.upExit ?? 0;
+  cancelPartial(): void {
+    this.counter?.cancelPartial();
+  }
 
-    if (this.state === "up") {
-      if (s < down) {
-        this.state = "down";
-        this.bottom = f;
-      }
-    } else {
-      // 跟踪底部最深处（repSignal 最小）
-      if (this.bottom && this.ex.repSignal(this.bottom) > s) this.bottom = f;
-      if (s > up) {
-        this.state = "up";
-        this.count++;
-        const q = this.ex.repQuality && this.bottom ? this.ex.repQuality(this.bottom) : 1;
-        this.bottom = null;
-        return { count: this.count, quality: clamp(q, 0, 1) };
-      }
-    }
-    return null;
+  update(f: PoseFeatures): RepEvent | null {
+    if (this.ex.type !== "rep" || !this.ex.repSignal || !this.counter) return null;
+    const s = this.ex.repSignal(f);
+    const quality = this.ex.repQuality ? this.ex.repQuality(f) : 1;
+    const event = this.counter.update(s, { quality: clamp(quality, 0, 1) });
+    if (!event) return null;
+    this.count = event.count;
+    return { count: event.count, quality: clamp(event.quality, 0, 1) };
   }
 }
